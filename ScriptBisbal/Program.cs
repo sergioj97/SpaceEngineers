@@ -43,28 +43,6 @@ namespace IngameScript
 		//
 		// to learn more about ingame scripts.
 
-		// ************************************************************************************************
-		// FUNCIONES UTILITARIAS CORE
-		// ************************************************************************************************
-
-
-		// Devuelve la surface pedida del bloque indicado
-		public IMyTextSurface get_nice_screen(string BlockName, int ScreenId = 0)
-		{
-			IMyTextSurfaceProvider tsp_cabina = (IMyTextSurfaceProvider)GridTerminalSystem.GetBlockWithName(BlockName);
-			return tsp_cabina.GetSurface(ScreenId);
-		}
-
-
-		// Pone la fuente a monospace en las surfaces del bloque indicado (para que las cosas queden bien alineadas)
-		public void set_monospace_font(string BlockName)
-		{
-			IMyTerminalBlock bloque = (IMyTerminalBlock)GridTerminalSystem.GetBlockWithName(BlockName);
-			bloque.SetValue<long>("Font", 1147350002);
-		}
-
-		//==============================================================================================================
-		//==============================================================================================================
 
 		// ************************************************************************************************
 		// CONSTANTES GLOBALES
@@ -81,6 +59,19 @@ namespace IngameScript
 		// ************************************************************************************************
 		// FUNCIONES UTILITARIAS
 		// ************************************************************************************************
+		public IMyTextSurface get_nice_screen(string BlockName, int ScreenId = 0)
+		{
+			IMyTextSurfaceProvider tsp_cabina = (IMyTextSurfaceProvider)GridTerminalSystem.GetBlockWithName(BlockName);
+			return tsp_cabina.GetSurface(ScreenId);
+		}
+
+
+		// Pone la fuente a monospace en las surfaces del bloque indicado (para que las cosas queden bien alineadas)
+		public void set_monospace_font(string BlockName)
+		{
+			IMyTerminalBlock bloque = (IMyTerminalBlock)GridTerminalSystem.GetBlockWithName(BlockName);
+			bloque.SetValue<long>("Font", 1147350002);
+		}
 
 		public List<IMyMotorStator> cargar_datos_rotores(List<string> ListaNombres)
 		{
@@ -115,16 +106,8 @@ namespace IngameScript
 			return ListaBaterias;
 		}
 
-		public void program_setup_con_dispatcher()
+		public DispatcherLegacy program_setup_con_dispatcher(UpdateType tipo_actualizacion, IMyTextSurface display_principal)
         {
-			// Especifico la frecuencia de actualización
-			UpdateType tipo_actualizacion = UpdateType.Update10;
-			Runtime.UpdateFrequency = UpdateFrequency.Update10;
-
-			// Accedo a la pantalla y la configuro
-			IMyTextSurface displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl);
-			set_monospace_font(NombreAsientoControl);
-
 			// Creo la lista de páginas para el dispatcher
 			List<Pagina> listaPaginas = new List<Pagina>();
 
@@ -150,7 +133,7 @@ namespace IngameScript
 			listaPaginas.Add(new PaginaBaterias(cargar_datos_baterias(nombres_baterias), AnchoColumnaNombre_: 10));
 
 			// Creo el dispatcher
-			Despachador = new DispatcherLegacy(new ControladorPantalla(displayPrincipal, listaPaginas), tipo_actualizacion);
+			return new DispatcherLegacy(new ControladorPantalla(display_principal, listaPaginas), tipo_actualizacion);
 		}
 
 		// ************************************************************************************************
@@ -159,7 +142,14 @@ namespace IngameScript
 
 		public Program()
 		{
-			program_setup_con_dispatcher();
+			// Especifico la frecuencia de actualización
+			Runtime.UpdateFrequency = UpdateFrequency.Update10;
+
+			// Accedo a la pantalla y la configuro
+			IMyTextSurface display_principal = (IMyTextSurface)get_nice_screen(NombreAsientoControl);
+			set_monospace_font(NombreAsientoControl);
+
+			Despachador = program_setup_con_dispatcher(UpdateType.Update10, display_principal);
 		}
 
 

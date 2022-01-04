@@ -44,9 +44,40 @@ namespace IngameScript
 		// to learn more about ingame scripts.
 
 
+
+
+
+
 		// ************************************************************************************************
-		// FUNCIONES UTILITARIAS CORE
+		// CONSTANTES GLOBALES
 		// ************************************************************************************************
+
+		const string NombreAsientoControl = "Cockpit [ATS]";
+		const string NombreGiroscopio = "Gyroscope [ATS]";
+		const string NombreBateria = "Battery [ATS]";
+		const string NombreOreDetector = "Ore Detector [ATS]";
+
+        // ************************************************************************************************
+        // VARIABLES GLOBALES
+        // ************************************************************************************************
+
+        DispatcherLegacy Despachador;
+
+		// ************************************************************************************************
+		// FUNCIONES UTILITARIAS
+		// ************************************************************************************************
+
+		
+		public List<IMyFunctionalBlock> cargar_datos_sistemas(List<string> ListaNombres)
+		{
+			List<IMyFunctionalBlock> ListaSistemas = new List<IMyFunctionalBlock>();
+			foreach (string nombre in ListaNombres)
+			{
+				ListaSistemas.Add((IMyFunctionalBlock)GridTerminalSystem.GetBlockWithName(nombre));
+			}
+
+			return ListaSistemas;
+		}
 
 
 		// Devuelve la surface pedida del bloque indicado
@@ -64,77 +95,13 @@ namespace IngameScript
 			bloque.SetValue<long>("Font", 1147350002);
 		}
 
-		//==============================================================================================================
-		//==============================================================================================================
-
-
-
-
-
-
-
-		// ************************************************************************************************
-		// CONSTANTES GLOBALES
-		// ************************************************************************************************
-
-		const string NombreAsientoControl = "Cockpit [ATS]";
-
-		const string NombreGiroscopio = "Gyroscope [ATS]";
-		const string NombreBateria = "Battery [ATS]";
-		const string NombreOreDetector = "Ore Detector [ATS]";
-
-		// ************************************************************************************************
-		// VARIABLES GLOBALES
-		// ************************************************************************************************
-
-		IMyTextSurface displayPrincipal;
-		ControladorPantalla miControladorPantalla;
-
-		// ************************************************************************************************
-		// FUNCIONES UTILITARIAS
-		// ************************************************************************************************
-
-		public List<IMyMotorStator> cargar_datos_rotores(List<string> ListaNombres)
-		{
-			List<IMyMotorStator> ListaRotores = new List<IMyMotorStator>();
-			foreach (string nombre in ListaNombres)
-			{
-				ListaRotores.Add((IMyMotorStator)GridTerminalSystem.GetBlockWithName(nombre));
-			}
-
-			return ListaRotores;
-		}
-
-		public List<IMyFunctionalBlock> cargar_datos_sistemas(List<string> ListaNombres)
-		{
-			List<IMyFunctionalBlock> ListaSistemas = new List<IMyFunctionalBlock>();
-			foreach (string nombre in ListaNombres)
-			{
-				ListaSistemas.Add((IMyFunctionalBlock)GridTerminalSystem.GetBlockWithName(nombre));
-			}
-
-			return ListaSistemas;
-		}
-
 		// ************************************************************************************************
 		// ESQUELETO PRINCIPAL DEL PROGRAMA
 		// ************************************************************************************************
 
-		public Program()
+		public DispatcherLegacy program_setup_con_dispatcher(UpdateType tipo_actualizacion, IMyTextSurface display_principal)
 		{
-			Runtime.UpdateFrequency = UpdateFrequency.Update10;
-
-			program_setup1();
-		}
-
-
-		public void program_setup1()
-		{
-			displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl, ScreenId: 2);
-			set_monospace_font(NombreAsientoControl);
-
 			List<Pagina> listaPaginas = new List<Pagina>();
-
 
 			List<string> nombres_sistemas = new List<string>();
 			nombres_sistemas.Add(NombreGiroscopio);
@@ -144,12 +111,21 @@ namespace IngameScript
 
 			listaPaginas.Add(new PaginaPruebaMensaje("", "Peso vacio: 18.4 T\nCap. Carga: 32 T"));
 
-
-
-
-
-			miControladorPantalla = new ControladorPantalla(displayPrincipal, listaPaginas);
+			return new DispatcherLegacy(new ControladorPantalla(display_principal, listaPaginas), tipo_actualizacion);
 		}
+
+		public Program()
+		{
+			// Especifico la frecuencia de actualización
+			Runtime.UpdateFrequency = UpdateFrequency.Update10;
+
+			// Accedo a la pantalla y la configuro
+			IMyTextSurface display_principal = (IMyTextSurface)get_nice_screen(NombreAsientoControl, ScreenId: 1);
+			set_monospace_font(NombreAsientoControl);
+
+			Despachador = program_setup_con_dispatcher(UpdateType.Update10, display_principal);
+		}
+
 
 		public void Save()
 		{
@@ -163,52 +139,7 @@ namespace IngameScript
 
 		public void Main(string argument, UpdateType updateSource)
 		{
-
-			// Si se llama a Main desde un trigger (boton-comando),
-			// interpretar el comando y ejecutar el código correspondiente
-			if ((updateSource & UpdateType.Trigger) != 0)
-			{
-				switch (argument)
-				{
-					// Añadir aqui los posibles comandos como casos
-
-					case "button_previous_page":
-						//command_previous_page();
-						miControladorPantalla.Nav.PreviousPage();
-						break;
-
-					case "button_next_page":
-						//command_next_page();
-						miControladorPantalla.Nav.NextPage();
-						break;
-
-					case "button_inpage_nav_back":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_inpage_nav_next":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_enter":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					default:
-						break;
-				}
-			}
-
-
-			// Si es un update periodico
-			if ((updateSource & UpdateType.Update10) != 0)
-			{
-				miControladorPantalla.Actualizar();
-			}
-
-
-
-
+			Despachador.HandleMain(argument, updateSource);
 		}
 
 	}

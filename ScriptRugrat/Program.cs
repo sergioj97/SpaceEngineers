@@ -44,10 +44,22 @@ namespace IngameScript
 		// to learn more about ingame scripts.
 
 
+
 		// ************************************************************************************************
-		// FUNCIONES UTILITARIAS CORE
+		// CONSTANTES GLOBALES
 		// ************************************************************************************************
 
+		const string NombreAsientoControl = "Industrial Cockpit [Rugrat]";
+		
+		// ************************************************************************************************
+		// VARIABLES GLOBALES
+		// ************************************************************************************************
+
+		DispatcherLegacy Despachador;
+
+		// ************************************************************************************************
+		// FUNCIONES UTILITARIAS
+		// ************************************************************************************************
 
 		// Devuelve la surface pedida del bloque indicado
 		public IMyTextSurface get_nice_screen(string BlockName, int ScreenId = 0)
@@ -63,27 +75,6 @@ namespace IngameScript
 			IMyTerminalBlock bloque = (IMyTerminalBlock)GridTerminalSystem.GetBlockWithName(BlockName);
 			bloque.SetValue<long>("Font", 1147350002);
 		}
-
-		//==============================================================================================================
-		//==============================================================================================================
-
-		// ************************************************************************************************
-		// CONSTANTES GLOBALES
-		// ************************************************************************************************
-
-		const string NombreAsientoControl = "Industrial Cockpit [Rugrat]";
-
-		// ************************************************************************************************
-		// VARIABLES GLOBALES
-		// ************************************************************************************************
-
-		IMyTextSurface displayPrincipal;
-		ControladorPantalla miControladorPantalla;
-
-		// ************************************************************************************************
-		// FUNCIONES UTILITARIAS
-		// ************************************************************************************************
-
 		public List<IMyMotorStator> cargar_datos_rotores(List<string> ListaNombres)
 		{
 			List<IMyMotorStator> ListaRotores = new List<IMyMotorStator>();
@@ -118,11 +109,9 @@ namespace IngameScript
 			return ListaBaterias;
 		}
 
-		public void program_setup1()
-		{
-			displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl, ScreenId: 1);
-			set_monospace_font(NombreAsientoControl);
 
+		public DispatcherLegacy program_setup_con_dispatcher(UpdateType tipo_actualizacion, IMyTextSurface display_principal)
+		{
 			List<Pagina> listaPaginas = new List<Pagina>();
 
 			List<string> nombres_sistemas = new List<string>();
@@ -151,10 +140,7 @@ namespace IngameScript
 			listaPaginas.Add( new PaginaBaterias(cargar_datos_baterias(nombres_baterias), AnchoColumnaNombre_:10) );
 			*/
 
-
-
-			miControladorPantalla = new ControladorPantalla(displayPrincipal, listaPaginas);
-
+			return new DispatcherLegacy(new ControladorPantalla(display_principal, listaPaginas), tipo_actualizacion);
 		}
 
 		// ************************************************************************************************
@@ -165,7 +151,10 @@ namespace IngameScript
 		{
 			Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
-			program_setup1();
+			IMyTextSurface displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl, ScreenId: 1);
+			set_monospace_font(NombreAsientoControl);
+
+			Despachador = program_setup_con_dispatcher(UpdateType.Update10, displayPrincipal);
 		}
 
 
@@ -179,50 +168,9 @@ namespace IngameScript
 			// needed. 
 		}
 
-		public void Main(string argument, UpdateType updateSource)
+		public void Main(string argument, UpdateType updateType)
 		{
-
-			// Si se llama a Main desde un trigger (boton-comando),
-			// interpretar el comando y ejecutar el código correspondiente
-			if ((updateSource & UpdateType.Trigger) != 0)
-			{
-				switch (argument)
-				{
-					// Añadir aqui los posibles comandos como casos
-
-					case "button_previous_page": // Debe estar en el 1
-						miControladorPantalla.Nav.PreviousPage();
-						break;
-
-					case "button_next_page": // Debe estar en el 2
-						miControladorPantalla.Nav.NextPage();
-						break;
-
-					case "button_inpage_nav_back": // Debe estar en el 3
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_enter": // Debe estar en el 4
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_inpage_nav_next": // Debe estar en el 5
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					default:
-						break;
-				}
-			}
-
-
-			// Si es un update periodico
-			if ((updateSource & UpdateType.Update10) != 0)
-			{
-				miControladorPantalla.Actualizar();
-			}
-
-
+			Despachador.HandleMain(argument, updateType);
 		}
 
 	}
