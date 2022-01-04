@@ -76,8 +76,7 @@ namespace IngameScript
 		// VARIABLES GLOBALES
 		// ************************************************************************************************
 
-		IMyTextSurface displayPrincipal;
-		ControladorPantalla miControladorPantalla;
+		DispatcherLegacy Despachador;
 
 		// ************************************************************************************************
 		// FUNCIONES UTILITARIAS
@@ -111,19 +110,25 @@ namespace IngameScript
 			foreach (string nombre in ListaNombres)
 			{
 				ListaBaterias.Add((IMyBatteryBlock)GridTerminalSystem.GetBlockWithName(nombre));
-				//Echo(GridTerminalSystem.GetBlockWithName(nombre).DisplayNameText.ToString());
 			}
 
 			return ListaBaterias;
 		}
 
-		public void program_setup1()
-		{
-			displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl);
+		public void program_setup_con_dispatcher()
+        {
+			// Especifico la frecuencia de actualización
+			UpdateType tipo_actualizacion = UpdateType.Update10;
+			Runtime.UpdateFrequency = UpdateFrequency.Update10;
+
+			// Accedo a la pantalla y la configuro
+			IMyTextSurface displayPrincipal = (IMyTextSurface)get_nice_screen(NombreAsientoControl);
 			set_monospace_font(NombreAsientoControl);
 
+			// Creo la lista de páginas para el dispatcher
 			List<Pagina> listaPaginas = new List<Pagina>();
 
+			// Creo los "widgets"
 			List<string> nombres_sistemas = new List<string>();
 			nombres_sistemas.Add("Gyroscope [Bisbal]");
 			nombres_sistemas.Add("O2/H2 Generator [Bisbal]");
@@ -144,10 +149,8 @@ namespace IngameScript
 			nombres_baterias.Add("Battery 6 [Bisbal]");
 			listaPaginas.Add(new PaginaBaterias(cargar_datos_baterias(nombres_baterias), AnchoColumnaNombre_: 10));
 
-
-
-			miControladorPantalla = new ControladorPantalla(displayPrincipal, listaPaginas);
-
+			// Creo el dispatcher
+			Despachador = new DispatcherLegacy(new ControladorPantalla(displayPrincipal, listaPaginas), tipo_actualizacion);
 		}
 
 		// ************************************************************************************************
@@ -156,9 +159,7 @@ namespace IngameScript
 
 		public Program()
 		{
-			Runtime.UpdateFrequency = UpdateFrequency.Update10;
-
-			program_setup1();
+			program_setup_con_dispatcher();
 		}
 
 
@@ -172,52 +173,9 @@ namespace IngameScript
 			// needed. 
 		}
 
-		public void Main(string argument, UpdateType updateSource)
+		public void Main(string argument, UpdateType updateType)
 		{
-
-			// Si se llama a Main desde un trigger (boton-comando),
-			// interpretar el comando y ejecutar el código correspondiente
-			if ((updateSource & UpdateType.Trigger) != 0)
-			{
-				switch (argument)
-				{
-					// Añadir aqui los posibles comandos como casos
-
-					case "button_previous_page":
-						//command_previous_page();
-						miControladorPantalla.Nav.PreviousPage();
-						break;
-
-					case "button_next_page":
-                        //command_next_page();
-                        miControladorPantalla.Nav.NextPage();
-						break;
-
-					case "button_inpage_nav_back":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_inpage_nav_next":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					case "button_enter":
-						miControladorPantalla.Nav.PaginaActual.HandleCommand(argument);
-						break;
-
-					default:
-						break;
-				}
-			}
-
-
-			// Si es un update periodico
-			if ((updateSource & UpdateType.Update10) != 0)
-			{
-				miControladorPantalla.Actualizar();
-			}
-
-
+			Despachador.HandleMain(argument, updateType);
 		}
 	}
 }

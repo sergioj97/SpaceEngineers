@@ -9,8 +9,10 @@
     <Import_RootNamespace>IngameScript</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Dispatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ControladorPantalla.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavegadorLineal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DispatcherLegacy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pagina.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginaBaterias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginaPruebaMensaje.cs" />
