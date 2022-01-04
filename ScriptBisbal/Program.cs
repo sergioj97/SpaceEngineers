@@ -149,6 +149,7 @@ namespace IngameScript
 			IMyTextSurface display_principal = (IMyTextSurface)get_nice_screen(NombreAsientoControl);
 			set_monospace_font(NombreAsientoControl);
 
+
 			Despachador = program_setup_con_dispatcher(UpdateType.Update10, display_principal);
 		}
 

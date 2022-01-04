@@ -28,6 +28,34 @@ namespace IngameScript
          */
         public abstract class Dispatcher
         {
+            public Dispatcher(Dictionary<string,string> commandDictionary)
+            {
+                if (commandDictionary != null)
+                {
+                    _commandDictionary = commandDictionary;
+                }
+                else
+                {
+                    _commandDictionary = _generarDiccionarioPorDefecto();
+                }
+            }
+
+            private Dictionary<string, string> _commandDictionary;
+            private const string _unknownCommandString = "UNKNOWN_COMMAND";
+
+
+            private Dictionary<string, string> _generarDiccionarioPorDefecto()
+            {
+                Dictionary<string, string> diccionario = new Dictionary<string, string>();
+                diccionario.Add("button_previous_page", "button_previous_page");
+                diccionario.Add("button_next_page", "button_next_page");
+                diccionario.Add("button_inpage_nav_back", "button_inpage_nav_back");
+                diccionario.Add("button_inpage_nav_next", "button_inpage_nav_next");
+                diccionario.Add("button_enter", "button_enter");
+
+                return diccionario;
+            }
+
             // Reacciona a una ejecución de Main.
             public void HandleMain(string argument, UpdateType updateType)
             {
@@ -43,8 +71,21 @@ namespace IngameScript
 
             }
 
-            public abstract void HandleCommand(string command);
+            public abstract void HandleCommand(string Command);
             public abstract void HandleUpdate(UpdateType updateType);
+            public string TranslateCommand(string Command)
+            {
+                string valor;
+                if (_commandDictionary.TryGetValue(Command, out valor))
+                {
+                    return valor;
+                }
+                else
+                {
+                    return _unknownCommandString;
+                }
+                
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace IngameScript
     {
         public class DispatcherLegacy : Dispatcher
         {
-            public DispatcherLegacy(ControladorPantalla Controlador, UpdateType ScreenUpdateFrequency)
+            public DispatcherLegacy(ControladorPantalla Controlador, UpdateType ScreenUpdateFrequency, Dictionary<string, string> commandDictionary = null) : base(commandDictionary)
             {
                 _controladorPantalla = Controlador;
                 _screenUpdateFrequency = ScreenUpdateFrequency;
@@ -33,7 +33,7 @@ namespace IngameScript
             private ControladorPantalla _controladorPantalla;
             private UpdateType _screenUpdateFrequency;
 
-
+            
             public override void HandleCommand(string command)
             {
                 switch (command)
@@ -70,6 +70,7 @@ namespace IngameScript
                     _controladorPantalla.Actualizar();
                 }
             }
+
         }
     }
 }
