@@ -112,6 +112,8 @@ namespace IngameScript
 
 		public DispatcherLegacy program_setup_con_dispatcher(UpdateType tipo_actualizacion, IMyTextSurface display_principal)
 		{
+			int ancho_nombre = 20;
+
 			List<Pagina> listaPaginas = new List<Pagina>();
 
 			List<string> nombres_sistemas = new List<string>();
@@ -122,23 +124,25 @@ namespace IngameScript
 			nombres_sistemas.Add("Gyroscope 1 [Rugrat]");
 			nombres_sistemas.Add("Gyroscope 2 [Rugrat]");
 			nombres_sistemas.Add("Gyroscope 3 [Rugrat]");
+			nombres_sistemas.Add("Gyroscope 4 [Rugrat]");
+			nombres_sistemas.Add("Gyroscope 5 [Rugrat]");
 			listaPaginas.Add(new PaginaSistemas(cargar_datos_sistemas(nombres_sistemas)));
 
 			List<string> nombres_rotores = new List<string>();
 			nombres_rotores.Add("Advanced Rotor L [Rugrat]");
 			nombres_rotores.Add("Advanced Rotor R [Rugrat]");
-			listaPaginas.Add(new PaginaRotores(cargar_datos_rotores(nombres_rotores), AnchoColumnaNombre_: 10));
+			listaPaginas.Add(new PaginaRotores(cargar_datos_rotores(nombres_rotores), AnchoColumnaNombre_: ancho_nombre));
 
-			/*
+			
 			List<string> nombres_baterias = new List<string>();
-			nombres_baterias.Add("Battery 1 [Bisbal]");
-			nombres_baterias.Add("Battery 2 [Bisbal]");
-			nombres_baterias.Add("Battery 3 [Bisbal]");
-			nombres_baterias.Add("Battery 4 [Bisbal]");
-			nombres_baterias.Add("Battery 5 [Bisbal]");
-			nombres_baterias.Add("Battery 6 [Bisbal]");
-			listaPaginas.Add( new PaginaBaterias(cargar_datos_baterias(nombres_baterias), AnchoColumnaNombre_:10) );
-			*/
+			nombres_baterias.Add("Battery 1 [Rugrat]");
+			nombres_baterias.Add("Battery 2 [Rugrat]");
+			nombres_baterias.Add("Battery 3 [Rugrat]");
+			nombres_baterias.Add("Battery 4 [Rugrat]");
+			nombres_baterias.Add("Battery 5 [Rugrat]");
+			nombres_baterias.Add("Battery 6 [Rugrat]");
+			listaPaginas.Add( new PaginaBaterias(cargar_datos_baterias(nombres_baterias), AnchoColumnaNombre_:ancho_nombre) );
+			
 
 			return new DispatcherLegacy(new ControladorPantalla(display_principal, listaPaginas), tipo_actualizacion);
 		}
